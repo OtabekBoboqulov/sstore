@@ -19,18 +19,18 @@ def signup(request):
 
 @api_view(['POST'])
 def login(request):
-    username = request.data.get('market_username')
+    phone_number = request.data.get('phone_number')
     password = request.data.get('password')
 
-    if not username or not password:
-        return Response({'error': 'Username and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not phone_number or not password:
+        return Response({'error': 'Phone number and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = authenticate(username=username, password=password)
+    user = authenticate(username=phone_number, password=password)
     if user and isinstance(user, Market):
         token, _ = CustomToken.objects.get_or_create(
             market=user,
             defaults={'key': str(uuid.uuid4())}
         )
         serializer = MarketSerializer(user)
-        return Response({'token': token.key, 'user': serializer.data})
+        return Response({'token': token.key, 'market': serializer.data})
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)

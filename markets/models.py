@@ -29,10 +29,10 @@ class MarketManager(BaseUserManager):
 
 
 class Market(AbstractBaseUser, PermissionsMixin):
-    market_username = models.CharField(max_length=50, unique=True)
+    phone_number = models.CharField(max_length=16, unique=True)
     market_name = models.CharField(max_length=250)
-    phone_number = models.CharField(max_length=15, blank=True)
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    plan = models.CharField(blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
@@ -52,8 +52,8 @@ class Market(AbstractBaseUser, PermissionsMixin):
     )
     objects = MarketManager()
 
-    USERNAME_FIELD = 'market_username'
+    USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['market_name']
 
     def __str__(self):
-        return self.market_username
+        return self.market_name

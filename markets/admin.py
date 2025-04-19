@@ -4,5 +4,5 @@ from .models import Market
 
 @admin.register(Market)
 class NewUserAdmin(admin.ModelAdmin):
-    list_display = ('market_username', 'market_name', 'phone_number', 'is_active')
-    search_fields = ('market_username', 'market_name')
+    list_display = ('phone_number', 'market_name', 'plan', 'is_active')
+    search_fields = ('phone_number', 'market_name')
