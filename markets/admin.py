@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Market
+from .models import Market, CustomToken
 
+admin.site.register(CustomToken)
 
 @admin.register(Market)
 class NewUserAdmin(admin.ModelAdmin):

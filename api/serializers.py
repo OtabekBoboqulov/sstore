@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from markets.models import Market
+from products.models import Product, Category
+
 
 class MarketSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,3 +18,15 @@ class MarketSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'category_id', 'name', 'quantity', 'quantity_type', 'price_per_quantity', 'status', 'date']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'market_id', 'date']

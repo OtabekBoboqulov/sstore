@@ -55,5 +55,10 @@ class Market(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['market_name']
 
+    @property
+    def is_authenticated(self):
+        return True
+
     def __str__(self):
         return self.market_name
+
