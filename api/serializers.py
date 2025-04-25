@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from markets.models import Market
-from products.models import Product, Category
+from products.models import Product, Category, ProductUpdate
+from reports.models import Expanse
 
 
 class MarketSerializer(serializers.ModelSerializer):
@@ -21,12 +22,28 @@ class MarketSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    total_subtracted = serializers.IntegerField(required=False, read_only=True)
+    total_sold_price = serializers.IntegerField(required=False, read_only=True)
+
     class Meta:
         model = Product
-        fields = ['id', 'category_id', 'name', 'quantity', 'quantity_type', 'price_per_quantity', 'status', 'date']
+        fields = ['id', 'category_id', 'name', 'quantity', 'quantity_type', 'price_per_quantity', 'status', 'date',
+                  'total_subtracted', 'total_sold_price']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'market_id', 'date']
+
+
+class ProductUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductUpdate
+        fields = ['id', 'product_id', 'status', 'quantity', 'price', 'date']
+
+
+class ExpanseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expanse
+        fields = ['id', 'market_id', 'type', 'price', 'date']
