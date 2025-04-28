@@ -1,9 +1,11 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from .serializers import MarketSerializer
 from markets.models import Market, CustomToken
+from .authentication import CustomTokenAuthentication
 import uuid
 
 
@@ -34,3 +36,11 @@ def login(request):
         serializer = MarketSerializer(user)
         return Response({'token': token.key, 'market': serializer.data})
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    request.user.custom_tokens.all().delete()
+    return Response({'message': 'Successfully logged out'})

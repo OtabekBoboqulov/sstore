@@ -5,5 +5,6 @@ from page_views.views import dashboard
 urlpatterns = [
     path('signup/', views.signup),
     path('login/', views.login),
+    path('logout/', views.logout),
     path('dashboard/', dashboard),
 ]
