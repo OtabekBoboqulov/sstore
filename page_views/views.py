@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum, Case, When, IntegerField
 from datetime import datetime
 from django.utils import timezone
-from api.serializers import ProductSerializer, CategorySerializer, ProductUpdateSerializer, ExpanseSerializer
+from api.serializers import ProductSerializer, CategorySerializer, ProductUpdateSerializer, ExpanseSerializer, \
+    MarketSerializer
 from api.authentication import CustomTokenAuthentication
 from products.models import Product, Category, ProductUpdate
 from reports.models import Expanse
@@ -48,6 +49,8 @@ def dashboard(request):
     current_day = datetime.now().day
     start_date = timezone.make_aware(datetime(datetime.now().year, current_month, 1))
     profit = list()
+    market_data = request.user
+    market_serialized = MarketSerializer(market_data)
     for i in range(1, current_day + 1):
         end_date = timezone.make_aware(datetime(datetime.now().year, current_month, i, 23, 59, 59, 999999))
         updates = ProductUpdate.objects.all().filter(product_id__in=product_ids, status='subed', date__gte=start_date,
@@ -65,4 +68,5 @@ def dashboard(request):
     quantity = sum([product["quantity"] for product in products_serialized.data])
     return Response([{'products': products_serialized.data}] + [{'quantity': quantity}] + [
         {'products_by_sells': products_serialized_by_sells.data}] + [
-                        {'products_by_price': products_serialized_by_price.data}] + [{'profit': profit}])
+                        {'products_by_price': products_serialized_by_price.data}] + [{'profit': profit}] + [
+                        {'market_data': market_serialized.data}])

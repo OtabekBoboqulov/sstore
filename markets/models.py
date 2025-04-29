@@ -31,7 +31,7 @@ class MarketManager(BaseUserManager):
 class Market(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=16, unique=True)
     market_name = models.CharField(max_length=250)
-    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True, default='404-BNF.jpg')
     plan = models.CharField(blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
