@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils import timezone
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 
 
 class CustomToken(models.Model):
@@ -31,7 +32,7 @@ class MarketManager(BaseUserManager):
 class Market(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=16, unique=True)
     market_name = models.CharField(max_length=250)
-    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True, default='404-BNF.jpg')
+    profile_picture = CloudinaryField('avatar image', folder='sstore_profiles', overwrite=True, null=True, blank=True)
     plan = models.CharField(blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -61,4 +62,3 @@ class Market(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.market_name
-
