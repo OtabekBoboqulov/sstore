@@ -46,6 +46,7 @@ def dashboard(request):
     products_serialized = ProductSerializer(products, many=True)
     product_ids = [product['id'] for product in products_serialized.data]
     current_month = datetime.now().month
+    current_month_text = datetime.now().strftime('%B')
     current_day = datetime.now().day
     start_date = timezone.make_aware(datetime(datetime.now().year, current_month, 1))
     profit = list()
@@ -82,4 +83,4 @@ def dashboard(request):
                         {'products_by_price': products_serialized_by_price.data}] + [{'profit': profit}] + [
                         {'market_data': market_serialized.data}] + [{'income': income}] + [
                         {'expanses_total': expanses_total}] + [{'products_subbed': products_subbed}] + [
-                        {'products_added': products_added}])
+                        {'products_added': products_added}] + [{'current_month': current_month_text}])
