@@ -55,12 +55,23 @@ def dashboard(request):
         end_date = timezone.make_aware(datetime(datetime.now().year, current_month, i, 23, 59, 59, 999999))
         updates = ProductUpdate.objects.all().filter(product_id__in=product_ids, status='subed', date__gte=start_date,
                                                      date__lte=end_date)
+        updates_added = ProductUpdate.objects.all().filter(product_id__in=product_ids, status='added',
+                                                           date__gte=start_date, date__lte=end_date)
         updates_serialized = ProductUpdateSerializer(updates, many=True)
+        updates_added_serialized = ProductUpdateSerializer(updates_added, many=True)
         profit_from_sells = sum(list(map(float, [update['price'] for update in updates_serialized.data])))
+        expanse_from_products = sum(list(map(float, [update['price'] for update in updates_added_serialized.data])))
         expanses = Expanse.objects.all().filter(market_id=request.user.id, date__gte=start_date, date__lte=end_date)
         expanses_serialized = ExpanseSerializer(expanses, many=True)
         expanses_sum = sum(list(map(float, [expanse['price'] for expanse in expanses_serialized.data])))
-        profit.append(profit_from_sells - expanses_sum)
+        profit.append(profit_from_sells - expanse_from_products - expanses_sum)
+    try:
+        income = profit_from_sells
+        expanses_total = expanses_sum + expanse_from_products
+        products_added = sum(list(map(int, [update['quantity'] for update in updates_added_serialized.data])))
+        products_subbed = sum(list(map(int, [update['quantity'] for update in updates_serialized.data])))
+    except NameError:
+        income, expanses_total, products_subbed, products_added = 0, 0, 0, 0
     products_ordered_by_sells = order_products_by_sells(markets)
     products_serialized_by_sells = ProductSerializer(products_ordered_by_sells, many=True)
     products_ordered_by_price = order_products_by_price(markets)
@@ -69,4 +80,6 @@ def dashboard(request):
     return Response([{'products': products_serialized.data}] + [{'quantity': quantity}] + [
         {'products_by_sells': products_serialized_by_sells.data}] + [
                         {'products_by_price': products_serialized_by_price.data}] + [{'profit': profit}] + [
-                        {'market_data': market_serialized.data}])
+                        {'market_data': market_serialized.data}] + [{'income': income}] + [
+                        {'expanses_total': expanses_total}] + [{'products_subbed': products_subbed}] + [
+                        {'products_added': products_added}])
