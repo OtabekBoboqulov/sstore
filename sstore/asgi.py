@@ -1,16 +1,19 @@
-"""
-ASGI config for sstore project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
-"""
-
 import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sstore.settings")
+django.setup()
 
 from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from page_views.middleware import TokenAuthMiddleware
+import api.routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sstore.settings')
-
-application = get_asgi_application()
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": TokenAuthMiddleware(
+        URLRouter(
+            api.routing.websocket_urlpatterns
+        )
+    ),
+})

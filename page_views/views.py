@@ -84,3 +84,17 @@ def dashboard(request):
                         {'market_data': market_serialized.data}] + [{'income': income}] + [
                         {'expanses_total': expanses_total}] + [{'products_subbed': products_subbed}] + [
                         {'products_added': products_added}] + [{'current_month': current_month_text}])
+
+
+# from channels.layers import get_channel_layer
+# from asgiref.sync import async_to_sync
+#
+# def trigger_dashboard_update(user_id):
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         f"dashboard_{user_id}",
+#         {
+#             "type": "dashboard_update"
+#         }
+#     )
+
