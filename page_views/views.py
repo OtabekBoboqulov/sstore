@@ -86,6 +86,23 @@ def dashboard(request):
                         {'products_added': products_added}] + [{'current_month': current_month_text}])
 
 
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def products(request):
+    categories = Category.objects.all().filter(market_id=request.user.id)
+    category_serialized = CategorySerializer(categories, many=True)
+    markets = [category['id'] for category in category_serialized.data if category['market_id'] == request.user.id]
+    products = Product.objects.all().filter(category_id__in=markets)
+    products_serialized = ProductSerializer(products, many=True)
+    products_quantity = len(products_serialized.data)
+    available_products = len([product for product in products_serialized.data if product['status'] == 'available'])
+    few_products = len([product for product in products_serialized.data if product['status'] == 'few'])
+    ended_products = len([product for product in products_serialized.data if product['status'] == 'ended'])
+    return Response({'products': products_serialized.data, 'products_quantity': products_quantity,
+                     'available_products': available_products, 'few_products': few_products,
+                     'ended_products': ended_products})
+
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
 #
@@ -97,4 +114,3 @@ def dashboard(request):
 #             "type": "dashboard_update"
 #         }
 #     )
-
