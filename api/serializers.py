@@ -24,11 +24,12 @@ class MarketSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     total_subtracted = serializers.IntegerField(required=False, read_only=True)
     total_sold_price = serializers.IntegerField(required=False, read_only=True)
+    category_name = serializers.CharField(source='category_id.name', read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'category_id', 'name', 'quantity', 'quantity_type', 'price_per_quantity', 'status', 'date',
-                  'total_subtracted', 'total_sold_price']
+        fields = ['id', 'category_name', 'name', 'quantity', 'quantity_type', 'price_per_quantity',
+                  'status', 'date', 'total_subtracted', 'total_sold_price']
 
 
 class CategorySerializer(serializers.ModelSerializer):
