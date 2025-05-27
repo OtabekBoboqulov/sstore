@@ -103,6 +103,27 @@ def products(request):
                      'available_products': available_products, 'few_products': few_products,
                      'ended_products': ended_products})
 
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def product_edit(request, pk):
+    product = Product.objects.get(id=pk)
+    product_serialized = ProductSerializer(product)
+    return Response(product_serialized.data)
+
+
+@api_view(['PUT'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def product_update(request, pk):
+    product = Product.objects.get(id=pk)
+    product_serialized = ProductSerializer(product, data=request.data)
+    if product_serialized.is_valid():
+        product_serialized.save()
+        return Response({'message': 'Product updated successfully'})
+    return Response(product_serialized.errors, status=400)
+
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
 #
