@@ -139,9 +139,11 @@ def product_edit(request, pk):
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])
 def product_update(request, pk):
+    category = Category.objects.get(id=request.data['category_id'])
     product = Product.objects.get(id=pk)
     product_serialized = ProductSerializer(product, data=request.data)
     if product_serialized.is_valid():
+        product_serialized.validated_data['category_id'] = category
         product_serialized.save()
         return Response({'message': 'Product updated successfully'})
     return Response(product_serialized.errors, status=400)
