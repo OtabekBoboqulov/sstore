@@ -9,6 +9,7 @@ from api.serializers import ProductSerializer, CategorySerializer, ProductUpdate
 from api.authentication import CustomTokenAuthentication
 from products.models import Product, Category, ProductUpdate
 from reports.models import Expanse
+from unicodedata import category
 
 
 def order_products_by_sells(markets):
@@ -89,6 +90,15 @@ def dashboard(request):
 @api_view(['GET'])
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])
+def categories(request):
+    categories = Category.objects.all().filter(market_id=request.user.id)
+    category_serialized = CategorySerializer(categories, many=True)
+    return Response(category_serialized.data)
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
 def products(request):
     categories = Category.objects.all().filter(market_id=request.user.id)
     category_serialized = CategorySerializer(categories, many=True)
@@ -123,6 +133,32 @@ def product_update(request, pk):
         product_serialized.save()
         return Response({'message': 'Product updated successfully'})
     return Response(product_serialized.errors, status=400)
+
+
+@api_view(['DELETE'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def product_delete(request, pk):
+    product = Product.objects.get(id=pk)
+    product.delete()
+    return Response({'message': 'Product deleted successfully'})
+
+
+@api_view(['POST'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def product_create(request):
+    try:
+        category = Category.objects.get(id=request.data['category_id'])
+        print(request.data)
+        product = Product(category_id=category, name=request.data['name'], quantity=request.data['quantity'],
+                          quantity_type=request.data['quantity_type'],
+                          price_per_quantity=request.data['price_per_quantity'], image=request.data.get('image'),
+                          status='available')
+        product.save()
+        return Response({'message': 'Product created successfully'})
+    except Exception as e:
+        return Response(e, status=400)
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
