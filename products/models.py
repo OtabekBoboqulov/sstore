@@ -1,5 +1,6 @@
 from django.db import models
 from markets.models import Market
+from cloudinary.models import CloudinaryField
 
 
 class Category(models.Model):
@@ -26,6 +27,7 @@ class Product(models.Model):
     quantity = models.IntegerField()
     quantity_type = models.CharField(max_length=10, choices=QUANTITY_TYPES, default='numeric')
     price_per_quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    image = CloudinaryField('product image', folder='sstore_products', overwrite=True, null=True, blank=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='ended')
     date = models.DateTimeField(auto_now_add=True)
 
