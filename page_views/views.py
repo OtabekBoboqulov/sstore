@@ -96,6 +96,18 @@ def categories(request):
     return Response(category_serialized.data)
 
 
+@api_view(['POST'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def category_create(request):
+    try:
+        category = Category(name=request.data['name'], market_id=request.user)
+        category.save()
+        return Response({'message': 'Category created successfully'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
+
+
 @api_view(['GET'])
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -158,7 +170,7 @@ def product_create(request):
         product.save()
         return Response({'message': 'Product created successfully'})
     except Exception as e:
-        return Response(e, status=400)
+        return Response({'error': str(e)}, status=400)
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
