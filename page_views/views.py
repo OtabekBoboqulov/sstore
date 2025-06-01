@@ -156,6 +156,15 @@ def product_delete(request, pk):
     return Response({'message': 'Product deleted successfully'})
 
 
+@api_view(['DELETE'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def product_delete_several(request):
+    ids = request.data['ids']
+    Product.objects.filter(id__in=ids).delete()
+    return Response({'message': 'Products deleted successfully'})
+
+
 @api_view(['POST'])
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])
