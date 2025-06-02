@@ -1,3 +1,4 @@
+import cloudinary.uploader
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -141,6 +142,14 @@ def product_edit(request, pk):
 def product_update(request, pk):
     category = Category.objects.get(id=request.data['category_id'])
     product = Product.objects.get(id=pk)
+    if 'image' in request.FILES:
+        file = request.FILES['image']
+        result = cloudinary.uploader.upload(file)
+    else:
+        result = {'public_id': 'sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im'}
+    request.data._mutable = True
+    request.data['image'] = result['public_id']
+    request.data._mutable = False
     product_serialized = ProductSerializer(product, data=request.data)
     if product_serialized.is_valid():
         product_serialized.validated_data['category_id'] = category
@@ -173,10 +182,14 @@ def product_delete_several(request):
 def product_create(request):
     try:
         category = Category.objects.get(id=request.data['category_id'])
-        print(request.data)
+        if 'image' in request.FILES:
+            file = request.FILES['image']
+            result = cloudinary.uploader.upload(file)
+        else:
+            result = {'public_id': 'sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im'}
         product = Product(category_id=category, name=request.data['name'], quantity=request.data['quantity'],
                           quantity_type=request.data['quantity_type'],
-                          price_per_quantity=request.data['price_per_quantity'], image=request.data.get('image'),
+                          price_per_quantity=request.data['price_per_quantity'], image=result['public_id'],
                           status='available')
         product.save()
         return Response({'message': 'Product created successfully'})
