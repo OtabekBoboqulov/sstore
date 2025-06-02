@@ -5,12 +5,15 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum, Case, When, IntegerField
 from datetime import datetime
 from django.utils import timezone
+from django.http import HttpResponse
 from api.serializers import ProductSerializer, CategorySerializer, ProductUpdateSerializer, ExpanseSerializer, \
     MarketSerializer
 from api.authentication import CustomTokenAuthentication
 from products.models import Product, Category, ProductUpdate
 from reports.models import Expanse
-from unicodedata import category
+from io import BytesIO
+from openpyxl.utils import get_column_letter
+import pandas as pd
 
 
 def order_products_by_sells(markets):
@@ -195,6 +198,43 @@ def product_create(request):
         return Response({'message': 'Product created successfully'})
     except Exception as e:
         return Response({'error': str(e)}, status=400)
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def products_report(request):
+    categories = Category.objects.all().filter(market_id=request.user.id)
+    category_serialized = CategorySerializer(categories, many=True)
+    markets = [category['id'] for category in category_serialized.data if category['market_id'] == request.user.id]
+    products = Product.objects.all().filter(category_id__in=markets)
+    products_serialized = ProductSerializer(products, many=True)
+    data = {
+        'Mahsulot nomi': [product['name'] for product in products_serialized.data],
+        'Kategoriya': [product['category_name'] for product in products_serialized.data],
+        'Qoldiq': [product['quantity'] for product in products_serialized.data],
+        'Status': [product['status'] for product in products_serialized.data],
+        'Narx': [product['price_per_quantity'] for product in products_serialized.data]
+    }
+    df = pd.DataFrame(data)
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+        worksheet = writer.sheets['Sheet1']
+        for column in range(1, len(data) + 1):
+            max_length = max(
+                len(str(df.iloc[:, column - 1].values[i]))
+                for i in range(len(df)) if df.iloc[:, column - 1].values[i]
+            ) + 2
+            adjusted_width = min(max_length, 50)
+            worksheet.column_dimensions[get_column_letter(column)].width = adjusted_width
+    output.seek(0)
+    response = HttpResponse(
+        content=output.read(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename=products_report.xlsx'
+    return response
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
