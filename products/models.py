@@ -27,7 +27,8 @@ class Product(models.Model):
     quantity = models.IntegerField()
     quantity_type = models.CharField(max_length=10, choices=QUANTITY_TYPES, default='numeric')
     price_per_quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    image = CloudinaryField('product image', folder='sstore_products', overwrite=True, null=True, blank=True)
+    image = CloudinaryField('product image', folder='sstore_products',
+                            default='sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im', overwrite=True)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='ended')
     date = models.DateTimeField(auto_now_add=True)
 
