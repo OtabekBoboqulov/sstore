@@ -134,6 +134,25 @@ def products(request):
 @api_view(['GET'])
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])
+def product_detail(request, pk):
+    product = Product.objects.get(id=pk)
+    product_serialized = ProductSerializer(product)
+    current_month = datetime.now().month
+    start_date = timezone.make_aware(datetime(datetime.now().year, current_month, 1))
+    product_sold = ProductUpdate.objects.all().filter(product_id=pk, date__gte=start_date, status='subed')
+    product_sold_serialized = ProductUpdateSerializer(product_sold, many=True)
+    total_sold = sum(list(map(float, [update['price'] for update in product_sold_serialized.data])))
+    product_bought = ProductUpdate.objects.all().filter(product_id=pk, date__gte=start_date, status='added')
+    product_bought_serialized = ProductUpdateSerializer(product_bought, many=True)
+    total_bought = sum(list(map(float, [update['price'] for update in product_bought_serialized.data])))
+    return Response({'product': product_serialized.data, 'product_sold': product_sold_serialized.data,
+                     'product_bought': product_bought_serialized.data, 'total_sold': total_sold,
+                     'total_bought': total_bought})
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
 def product_edit(request, pk):
     product = Product.objects.get(id=pk)
     product_serialized = ProductSerializer(product)
