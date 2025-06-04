@@ -145,11 +145,14 @@ def product_edit(request, pk):
 def product_update(request, pk):
     category = Category.objects.get(id=request.data['category_id'])
     product = Product.objects.get(id=pk)
+    old_image = product.image.public_id
     if 'image' in request.FILES:
         file = request.FILES['image']
-        result = cloudinary.uploader.upload(file)
+        result = cloudinary.uploader.upload(file, folder='sstore_products')
+        if old_image != 'sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im':
+            cloudinary.uploader.destroy(old_image)
     else:
-        result = {'public_id': 'sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im'}
+        result = {'public_id': old_image}
     request.data._mutable = True
     request.data['image'] = result['public_id']
     request.data._mutable = False
@@ -187,7 +190,7 @@ def product_create(request):
         category = Category.objects.get(id=request.data['category_id'])
         if 'image' in request.FILES:
             file = request.FILES['image']
-            result = cloudinary.uploader.upload(file)
+            result = cloudinary.uploader.upload(file, folder='sstore_products')
         else:
             result = {'public_id': 'sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im'}
         product = Product(category_id=category, name=request.data['name'], quantity=request.data['quantity'],
