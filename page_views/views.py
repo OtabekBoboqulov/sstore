@@ -13,6 +13,7 @@ from products.models import Product, Category, ProductUpdate
 from reports.models import Expanse
 from io import BytesIO
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 import pandas as pd
 
 
@@ -212,6 +213,7 @@ def products_report(request):
     markets = [category['id'] for category in category_serialized.data if category['market_id'] == request.user.id]
     products = Product.objects.all().filter(category_id__in=markets)
     products_serialized = ProductSerializer(products, many=True)
+    market_name = request.user.market_name
     data = {
         'Mahsulot nomi': [product['name'] for product in products_serialized.data],
         'Kategoriya': [product['category_name'] for product in products_serialized.data],
@@ -222,8 +224,33 @@ def products_report(request):
     df = pd.DataFrame(data)
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False)
-        worksheet = writer.sheets['Sheet1']
+        df.to_excel(writer, index=False, startrow=3, sheet_name='Products Report')
+        worksheet = writer.sheets['Products Report']
+        header_font = Font(bold=True, color="FFFFFF", size=12)
+        header_fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
+        cell_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'),
+                             bottom=Side(style='thin'))
+        center_alignment = Alignment(horizontal='center', vertical='center')
+        worksheet['A1'] = f"Products Report for {market_name}"
+        worksheet['A1'].font = Font(bold=True, size=14, color="000000")
+        worksheet['A1'].alignment = Alignment(horizontal='center')
+        worksheet.merge_cells('A1:E1')
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        worksheet['A2'] = f"Generated on: {timestamp}"
+        worksheet['A2'].font = Font(italic=True, size=10)
+        worksheet['A2'].alignment = Alignment(horizontal='center')
+        worksheet.merge_cells('A2:E2')
+        for col_num, column_title in enumerate(df.columns, 1):
+            cell = worksheet.cell(row=4, column=col_num)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center_alignment
+            cell.border = cell_border
+        for row in range(5, len(df) + 5):
+            for col in range(1, len(df.columns) + 1):
+                cell = worksheet.cell(row=row, column=col)
+                cell.border = cell_border
+                cell.alignment = center_alignment
         for column in range(1, len(data) + 1):
             max_length = max(
                 len(str(df.iloc[:, column - 1].values[i]))
@@ -236,7 +263,7 @@ def products_report(request):
         content=output.read(),
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = 'attachment; filename=products_report.xlsx'
+    response['Content-Disposition'] = f'attachment; filename={market_name}_products_report.xlsx'
     return response
 
 # from channels.layers import get_channel_layer
