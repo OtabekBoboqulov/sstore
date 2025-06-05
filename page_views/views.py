@@ -116,6 +116,17 @@ def category_create(request):
 @api_view(['GET'])
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])
+def categories_with_products(request):
+    categories = Category.objects.all().filter(market_id=request.user.id)
+    result = {}
+    for category in categories:
+        result[str(category)] = ProductSerializer(category.products, many=True).data
+    return Response(result)
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
 def products(request):
     categories = Category.objects.all().filter(market_id=request.user.id)
     category_serialized = CategorySerializer(categories, many=True)
