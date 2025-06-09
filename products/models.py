@@ -14,8 +14,10 @@ class Category(models.Model):
 
 class Product(models.Model):
     QUANTITY_TYPES = (
-        ('mass', 'Grammda'),
-        ('numeric', 'Sonda'),
+        ('kg', 'KG'),
+        ('dona', 'DONA'),
+        ('metr', 'METR'),
+        ('litr', 'LITR'),
     )
     STATUS_CHOICES = (
         ('ended', 'Tugagan'),
@@ -25,7 +27,7 @@ class Product(models.Model):
     category_id = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     name = models.CharField(max_length=250)
     quantity = models.IntegerField()
-    quantity_type = models.CharField(max_length=10, choices=QUANTITY_TYPES, default='numeric')
+    quantity_type = models.CharField(max_length=10, choices=QUANTITY_TYPES, default='dona')
     price_per_quantity = models.DecimalField(max_digits=10, decimal_places=2)
     image = CloudinaryField('product image', folder='sstore_products',
                             default='sstore_products/0c32b31941863a0f1fb8e97eaf55f595_lc10im', overwrite=True)
