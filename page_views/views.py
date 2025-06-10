@@ -7,7 +7,7 @@ from datetime import datetime
 from django.utils import timezone
 from django.http import HttpResponse
 from api.serializers import ProductSerializer, CategorySerializer, ProductUpdateSerializer, ExpanseSerializer, \
-    MarketSerializer
+    MarketSerializer, DebtorSerializer
 from api.authentication import CustomTokenAuthentication
 from products.models import Product, Category, ProductUpdate
 from reports.models import Expanse, Debtor
@@ -327,6 +327,16 @@ def save_product_updates(request):
             debtor.save()
             message += ' and debtor added successfully'
     return Response({'message': message})
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def debtors(request):
+    market = Market.objects.get(id=request.user.id)
+    debtors = Debtor.objects.filter(market_id=market)
+    debtors_serialized = DebtorSerializer(debtors, many=True)
+    return Response(debtors_serialized.data)
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
