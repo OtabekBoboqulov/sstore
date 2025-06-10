@@ -10,7 +10,8 @@ from api.serializers import ProductSerializer, CategorySerializer, ProductUpdate
     MarketSerializer
 from api.authentication import CustomTokenAuthentication
 from products.models import Product, Category, ProductUpdate
-from reports.models import Expanse
+from reports.models import Expanse, Debtor
+from markets.models import Market
 from io import BytesIO
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
@@ -302,14 +303,30 @@ def products_report(request):
 @permission_classes([IsAuthenticated])
 def save_product_updates(request):
     product_updates = request.data
-    for product_update in product_updates:
+    total_price = 0
+    for product_update in product_updates['sells']:
         price = product_update['price'] * product_update['quantity']
+        total_price += price
         product = Product.objects.get(id=product_update['product_id'])
         new_product_update = ProductUpdate(product_id=product, quantity=product_update['quantity'], price=price)
         new_product_update.save()
         product.quantity -= product_update['quantity']
         product.save()
-    return Response({'message': 'Product updates saved successfully'})
+    message = 'Product updates saved successfully'
+    if product_updates['debtor_name']:
+        debtor = Debtor.objects.filter(phone=product_updates['debtor_phone'])
+        if debtor.exists():
+            debtor = debtor.first()
+            debtor.price += total_price
+            debtor.save()
+            message += ' and debt added successfully'
+        else:
+            market = Market.objects.get(id=request.user.id)
+            debtor = Debtor(market_id=market, name=product_updates['debtor_name'], phone=product_updates['debtor_phone'],
+                            price=total_price)
+            debtor.save()
+            message += ' and debtor added successfully'
+    return Response({'message': message})
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
