@@ -304,28 +304,35 @@ def products_report(request):
 def save_product_updates(request):
     product_updates = request.data
     total_price = 0
-    for product_update in product_updates['sells']:
-        price = product_update['price'] * product_update['quantity']
-        total_price += price
-        product = Product.objects.get(id=product_update['product_id'])
-        new_product_update = ProductUpdate(product_id=product, quantity=product_update['quantity'], price=price)
-        new_product_update.save()
-        product.quantity -= product_update['quantity']
-        product.save()
     message = 'Product updates saved successfully'
+    d = {}
     if product_updates.get('debtor_name'):
         debtor = Debtor.objects.filter(phone=product_updates['debtor_phone'])
         if debtor.exists():
             debtor = debtor.first()
-            debtor.price += total_price
-            debtor.save()
+            if debtor.name.lower() != product_updates['debtor_name'].lower():
+                return Response({'message': 'Bir raqamdan faqat bitta nomga qarz olish mumkin'})
             message += ' and debt added successfully'
         else:
             market = Market.objects.get(id=request.user.id)
-            debtor = Debtor(market_id=market, name=product_updates['debtor_name'], phone=product_updates['debtor_phone'],
-                            price=total_price)
+            debtor = Debtor(market_id=market, name=product_updates['debtor_name'],
+                            phone=product_updates['debtor_phone'], price=total_price)
             debtor.save()
             message += ' and debtor added successfully'
+        d['debtor'] = debtor
+    for product_update in product_updates['sells']:
+        price = product_update['price'] * product_update['quantity']
+        total_price += price
+        product = Product.objects.get(id=product_update['product_id'])
+        new_product_update = ProductUpdate(product_id=product, quantity=product_update['quantity'], price=price,
+                                           debtor=d.get('debtor'))
+        new_product_update.save()
+        product.quantity -= product_update['quantity']
+        product.save()
+    if product_updates.get('debtor_name'):
+        debtor = Debtor.objects.filter(phone=product_updates['debtor_phone']).first()
+        debtor.price += total_price
+        debtor.save()
     return Response({'message': message})
 
 
@@ -337,6 +344,15 @@ def debtors(request):
     debtors = Debtor.objects.filter(market_id=market)
     debtors_serialized = DebtorSerializer(debtors, many=True)
     return Response(debtors_serialized.data)
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_debtors_debts(request, pk):
+    debtor = Debtor.objects.get(id=pk)
+    debts_serialized = ProductUpdateSerializer(debtor.debts, many=True)
+    return Response(debts_serialized.data)
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync

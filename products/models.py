@@ -1,5 +1,6 @@
 from django.db import models
 from markets.models import Market
+from reports.models import Debtor
 from cloudinary.models import CloudinaryField
 
 
@@ -56,6 +57,7 @@ class ProductUpdate(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_TYPES, default='subed')
     quantity = models.IntegerField()
     price = models.DecimalField(max_digits=11, decimal_places=2)
+    debtor = models.ForeignKey(Debtor, on_delete=models.SET_NULL, null=True, blank=True, related_name='debts')
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
