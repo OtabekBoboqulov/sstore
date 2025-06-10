@@ -313,7 +313,7 @@ def save_product_updates(request):
         product.quantity -= product_update['quantity']
         product.save()
     message = 'Product updates saved successfully'
-    if product_updates['debtor_name']:
+    if product_updates.get('debtor_name'):
         debtor = Debtor.objects.filter(phone=product_updates['debtor_phone'])
         if debtor.exists():
             debtor = debtor.first()
