@@ -296,6 +296,21 @@ def products_report(request):
     response['Content-Disposition'] = f'attachment; filename={market_name}_products_report.xlsx'
     return response
 
+
+@api_view(['POST'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def save_product_updates(request):
+    product_updates = request.data
+    for product_update in product_updates:
+        price = product_update['price'] * product_update['quantity']
+        product = Product.objects.get(id=product_update['product_id'])
+        new_product_update = ProductUpdate(product_id=product, quantity=product_update['quantity'], price=price)
+        new_product_update.save()
+        product.quantity -= product_update['quantity']
+        product.save()
+    return Response({'message': 'Product updates saved successfully'})
+
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync
 #

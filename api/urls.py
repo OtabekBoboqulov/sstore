@@ -19,4 +19,5 @@ urlpatterns = [
     path('products/delete/<int:pk>/', product_delete),
     path('products/delete/several/', product_delete_several),
     path('products/create/', product_create),
+    path('sell/', save_product_updates)
 ]
