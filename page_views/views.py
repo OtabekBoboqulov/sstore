@@ -228,7 +228,7 @@ def product_create(request):
         product = Product(category_id=category, name=request.data['name'], quantity=request.data['quantity'],
                           quantity_type=request.data['quantity_type'],
                           price_per_quantity=request.data['price_per_quantity'], image=result['public_id'],
-                          status='available')
+                          status=('available' if int(request.data['quantity']) >= 50 else 'few'))
         product.save()
         product_update = ProductUpdate(product_id=product, quantity=product.quantity,
                                        price=request.data['bought_price'], status='added')
