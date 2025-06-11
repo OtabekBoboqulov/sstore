@@ -328,12 +328,36 @@ def save_product_updates(request):
                                            debtor=d.get('debtor'))
         new_product_update.save()
         product.quantity -= product_update['quantity']
+        if product.quantity < 50:
+            product.status = 'few'
+        elif product.quantity == 0:
+            product.status = 'ended'
+        else:
+            product.status = 'available'
         product.save()
     if product_updates.get('debtor_name'):
         debtor = Debtor.objects.filter(phone=product_updates['debtor_phone']).first()
         debtor.price += total_price
         debtor.save()
     return Response({'message': message})
+
+
+@api_view(['POST'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def save_bought_products(request):
+    product_updates = request.data
+    product = Product.objects.get(id=product_updates['product_id'])
+    new_product_update = ProductUpdate(product_id=product, quantity=product_updates['quantity'],
+                                       price=product_updates['price'], status='added')
+    new_product_update.save()
+    product.quantity += product_updates['quantity']
+    if product.quantity > 50:
+        product.status = 'available'
+    elif product.quantity > 0:
+        product.status = 'few'
+    product.save()
+    return Response({'message': 'Product bought successfully'})
 
 
 @api_view(['GET'])
