@@ -230,7 +230,10 @@ def product_create(request):
                           price_per_quantity=request.data['price_per_quantity'], image=result['public_id'],
                           status='available')
         product.save()
-        return Response({'message': 'Product created successfully'})
+        product_update = ProductUpdate(product_id=product, quantity=product.quantity,
+                                       price=request.data['bought_price'], status='added')
+        product_update.save()
+        return Response({'message': 'Product created and new updated saved successfully'})
     except Exception as e:
         return Response({'error': str(e)}, status=400)
 
