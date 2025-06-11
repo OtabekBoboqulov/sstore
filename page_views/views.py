@@ -114,6 +114,15 @@ def category_create(request):
         return Response({'error': str(e)}, status=400)
 
 
+@api_view(['DELETE'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def category_delete(reqeust, pk):
+    category = Category.objects.get(id=pk)
+    category.delete()
+    return Response({'message': 'Category deleted successfully'})
+
+
 @api_view(['GET'])
 @authentication_classes([CustomTokenAuthentication])
 @permission_classes([IsAuthenticated])

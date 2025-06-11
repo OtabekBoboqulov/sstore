@@ -11,6 +11,7 @@ urlpatterns = [
     path('categories/', categories),
     path('categories/create/', category_create),
     path('categories/products/', categories_with_products),
+    path('categories/delete/<int:pk>/', category_delete),
     path('products/', products),
     path('products/<int:pk>/', product_detail),
     path('products/report/', products_report),
