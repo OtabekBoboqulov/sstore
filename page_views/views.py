@@ -387,8 +387,30 @@ def debtors(request):
 @permission_classes([IsAuthenticated])
 def get_debtors_debts(request, pk):
     debtor = Debtor.objects.get(id=pk)
+    debtor_serialized = DebtorSerializer(debtor)
     debts_serialized = ProductUpdateSerializer(debtor.debts, many=True)
-    return Response(debts_serialized.data)
+    return Response({'debtor': debtor_serialized.data, 'debts': debts_serialized.data})
+
+
+@api_view(['DELETE'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_debt(request, pk):
+    debt = ProductUpdate.objects.get(id=pk)
+    debtor = debt.debtor
+    debt.debtor = None
+    debtor.price -= debt.price
+    debt.save()
+    if float(debtor.price) <= 0:
+        debtor.delete()
+    else:
+        debtor.save()
+    return Response({'message': 'Debt deleted successfully'})
+
+
+@api_view(['GET'])
+def check(request):
+    return Response({'message': 'Server is running'})
 
 # from channels.layers import get_channel_layer
 # from asgiref.sync import async_to_sync

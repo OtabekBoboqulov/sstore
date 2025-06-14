@@ -41,7 +41,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductUpdate
-        fields = ['id', 'product_id', 'status', 'quantity', 'price', 'date']
+        fields = ['id', 'product_id', 'status', 'quantity', 'price', 'debtor', 'date']
 
 
 class ExpanseSerializer(serializers.ModelSerializer):

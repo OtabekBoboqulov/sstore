@@ -24,4 +24,6 @@ urlpatterns = [
     path('buy/', save_bought_products),
     path('debtors/', debtors),
     path('debtors/<int:pk>/', get_debtors_debts),
+    path('debtors/delete/<int:pk>/', delete_debt),
+    path('check/', check),
 ]
