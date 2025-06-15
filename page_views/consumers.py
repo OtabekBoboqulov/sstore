@@ -1,8 +1,8 @@
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from products.models import Category, Product, ProductUpdate
-from reports.models import Expanse
-from api.serializers import CategorySerializer, ProductSerializer, ProductUpdateSerializer, ExpanseSerializer, \
+from reports.models import Expense
+from api.serializers import CategorySerializer, ProductSerializer, ProductUpdateSerializer, ExpenseSerializer, \
     MarketSerializer
 from .views import order_products_by_price, order_products_by_sells
 from markets.models import Market
@@ -35,7 +35,7 @@ def get_dashboard_data(market_id, market_instance):
         updates_added = ProductUpdate.objects.filter(
             product_id__in=product_ids, status="added", date__range=(start_date, end_date)
         )
-        expanses = Expanse.objects.filter(market_id=market_id, date__range=(start_date, end_date))
+        expanses = Expense.objects.filter(market_id=market_id, date__range=(start_date, end_date))
         profit_sells = sum(float(u.price) for u in updates)
         expanse_products = sum(float(u.price) for u in updates_added)
         expanse_total = sum(float(e.price) for e in expanses)
@@ -48,7 +48,7 @@ def get_dashboard_data(market_id, market_instance):
     all_updates_added = ProductUpdate.objects.filter(
         product_id__in=product_ids, status="added", date__range=(start_date, end_of_month)
     )
-    all_expanses = Expanse.objects.filter(market_id=market_id, date__range=(start_date, end_of_month))
+    all_expanses = Expense.objects.filter(market_id=market_id, date__range=(start_date, end_of_month))
 
     # Serialization
     updates_serialized = ProductUpdateSerializer(all_updates, many=True).data

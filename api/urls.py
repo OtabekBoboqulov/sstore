@@ -25,5 +25,8 @@ urlpatterns = [
     path('debtors/', debtors),
     path('debtors/<int:pk>/', get_debtors_debts),
     path('debtors/delete/<int:pk>/', delete_debt),
+    path('expense/', expenses),
+    path('expense/types/', expense_types),
+    path('expense/add/', expense_save),
     path('check/', check),
 ]

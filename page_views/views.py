@@ -6,11 +6,11 @@ from django.db.models import Sum, Case, When, IntegerField
 from datetime import datetime
 from django.utils import timezone
 from django.http import HttpResponse
-from api.serializers import ProductSerializer, CategorySerializer, ProductUpdateSerializer, ExpanseSerializer, \
+from api.serializers import ProductSerializer, CategorySerializer, ProductUpdateSerializer, ExpenseSerializer, \
     MarketSerializer, DebtorSerializer
 from api.authentication import CustomTokenAuthentication
 from products.models import Product, Category, ProductUpdate
-from reports.models import Expanse, Debtor
+from reports.models import Expense, Debtor
 from markets.models import Market
 from io import BytesIO
 from openpyxl.utils import get_column_letter
@@ -69,8 +69,8 @@ def dashboard(request):
         updates_added_serialized = ProductUpdateSerializer(updates_added, many=True)
         profit_from_sells = sum(list(map(float, [update['price'] for update in updates_serialized.data])))
         expanse_from_products = sum(list(map(float, [update['price'] for update in updates_added_serialized.data])))
-        expanses = Expanse.objects.all().filter(market_id=request.user.id, date__gte=start_date, date__lte=end_date)
-        expanses_serialized = ExpanseSerializer(expanses, many=True)
+        expanses = Expense.objects.all().filter(market_id=request.user.id, date__gte=start_date, date__lte=end_date)
+        expanses_serialized = ExpenseSerializer(expanses, many=True)
         expanses_sum = sum(list(map(float, [expanse['price'] for expanse in expanses_serialized.data])))
         profit.append(profit_from_sells - expanse_from_products - expanses_sum)
     try:
@@ -406,6 +406,35 @@ def delete_debt(request, pk):
     else:
         debtor.save()
     return Response({'message': 'Debt deleted successfully'})
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def expenses(request):
+    current_month = datetime.now().month
+    start_date = timezone.make_aware(datetime(datetime.now().year, current_month, 1))
+    expenses = Expense.objects.all().filter(market_id=request.user.id, date__gte=start_date)
+    expenses_serialized = ExpenseSerializer(expenses, many=True)
+    return Response(expenses_serialized.data)
+
+
+@api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def expense_types(request):
+    options = dict(Expense.EXPENSE_TYPES)
+    return Response(options)
+
+
+@api_view(['POST'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def expense_save(request):
+    market = Market.objects.get(id=request.user.id)
+    expense = Expense(market_id=market, type=request.data['type'], price=request.data['price'])
+    expense.save()
+    return Response({'message': 'Expense saved successfully'})
 
 
 @api_view(['GET'])

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from markets.models import Market
 from products.models import Product, Category, ProductUpdate
-from reports.models import Expanse, Debtor
+from reports.models import Expense, Debtor
 
 
 class MarketSerializer(serializers.ModelSerializer):
@@ -46,9 +46,9 @@ class ProductUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'product_id', 'product_name', 'status', 'quantity', 'price', 'debtor', 'date']
 
 
-class ExpanseSerializer(serializers.ModelSerializer):
+class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Expanse
+        model = Expense
         fields = ['id', 'market_id', 'type', 'price', 'date']
 
 

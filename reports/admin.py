@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Expanse, Debtor
+from .models import Expense, Debtor
 
-admin.site.register(Expanse)
+admin.site.register(Expense)
 admin.site.register(Debtor)
