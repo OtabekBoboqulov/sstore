@@ -482,6 +482,35 @@ def history_delete(request, pk):
 
 
 @api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def history_edit(request, pk):
+    update = ProductUpdate.objects.get(id=pk)
+    update_serialized = ProductUpdateSerializer(update)
+    return Response(update_serialized.data)
+
+
+@api_view(['PUT'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def history_update(request, pk):
+    update = ProductUpdate.objects.get(id=pk)
+    product = Product.objects.get(id=update.product_id.id)
+    product.quantity += update.quantity
+    if update.debtor:
+        debtor = Debtor.objects.get(id=update.debtor.id)
+        debtor.price -= update.price
+        debtor.price += request.data['price']
+        debtor.save()
+    update.quantity = request.data['quantity']
+    update.price = request.data['price']
+    product.quantity -= update.quantity
+    product.save()
+    update.save()
+    return Response({'message': 'History updated successfully'})
+
+
+@api_view(['GET'])
 def check(request):
     return Response({'message': 'Server is running'})
 
