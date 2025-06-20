@@ -28,5 +28,6 @@ urlpatterns = [
     path('expense/', expenses),
     path('expense/types/', expense_types),
     path('expense/add/', expense_save),
+    path('history/', history),
     path('check/', check),
 ]

@@ -438,6 +438,34 @@ def expense_save(request):
 
 
 @api_view(['GET'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def history(request):
+    data = request.data
+    if data.get('start_month') and data.get('start_day'):
+        start_month = data['start_month']
+        start_day = data['start_day']
+    else:
+        start_month = datetime.now().month
+        start_day = 1
+    start_date = timezone.make_aware(datetime(datetime.now().year, start_month, start_day))
+    if data.get('end_month') and data.get('end_day'):
+        end_month = data['end_month']
+        end_day = data['end_day']
+    else:
+        end_month = datetime.now().month
+        end_day = datetime.now().day
+    end_date = timezone.make_aware(datetime(datetime.now().year, end_month, end_day))
+    market = Market.objects.get(id=request.user.id)
+    categories = Category.objects.all().filter(market_id=market)
+    products = Product.objects.all().filter(category_id__in=[category.id for category in categories])
+    updates = ProductUpdate.objects.all().filter(product_id__in=[product.id for product in products], status='subed',
+                                                 date__gte=start_date, date__lte=end_date)
+    updates_serialized = ProductUpdateSerializer(updates, many=True)
+    return Response(updates_serialized.data)
+
+
+@api_view(['GET'])
 def check(request):
     return Response({'message': 'Server is running'})
 
