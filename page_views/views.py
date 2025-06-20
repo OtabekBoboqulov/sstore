@@ -465,6 +465,22 @@ def history(request):
     return Response(updates_serialized.data)
 
 
+@api_view(['DELETE'])
+@authentication_classes([CustomTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def history_delete(request, pk):
+    update = ProductUpdate.objects.get(id=pk)
+    product = Product.objects.get(id=update.product_id.id)
+    product.quantity += update.quantity
+    product.save()
+    if update.debtor:
+        debtor = Debtor.objects.get(id=update.debtor.id)
+        debtor.price -= update.price
+        debtor.save()
+    update.delete()
+    return Response({'message': 'History deleted successfully'})
+
+
 @api_view(['GET'])
 def check(request):
     return Response({'message': 'Server is running'})
